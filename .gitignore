@@ -1,5 +1,8 @@
 # Ignore toolbox files
 *.toolbox
 
+# Ignore pdfs
+*.pdf
+
 # Ignore MAC files
 **/.DS_Store
