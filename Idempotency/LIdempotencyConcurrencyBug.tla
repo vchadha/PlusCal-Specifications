@@ -1,17 +1,9 @@
 --------------------- MODULE LIdempotencyConcurrencyBug ---------------------
 (***************************************************************************)
-(* This module contains an algorithm that implements Idempotency.          *)
-(*                                                                         *)
-(* We define the following invariants:                                     *)
-(*  1. New items are always written to the db with monotonically           *)
-(*      increasing indecies starting from 0.                               *)
-(*  2. If there are two concurrent requests, one will succeed and one      *)
-(*      will fail since they will both try to write to seq num N + 1       *)
-(*      and no overwrites are allowed.                                     *)
-(*                                                                         *)
-(* Idempotency defines the following invariant:                            *)
-(*  1. If multiple requests are sent with the same unique id, one          *)
-(*      will be processed and the other will not.                          *)
+(* This module contains an algorithm that implements Idempotency that also *)
+(* implements a faulty optimisation.                                       *)
+(* Parallelising the get latest item call with the idempotency check       *)
+(* introduces a bug whereby we violate our property of idempotency.        *)
 (***************************************************************************)
 
 \* Imports
@@ -212,5 +204,5 @@ IdUniqueness == (Len(db) > 1) => ( \A i, j \in 1..Len(db): (i /= j) => db[i][2] 
 FinalDBSize == (\A self \in ProcSet: pc[self] = "Done") => Len(db) = UniqueRequests
 =============================================================================
 \* Modification History
-\* Last modified Sat Apr 12 22:45:11 CDT 2025 by vchadha
+\* Last modified Sat Apr 19 08:00:48 CDT 2025 by vchadha
 \* Created Fri Mar 28 10:58:53 CDT 2025 by vchadha
