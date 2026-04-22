@@ -9,23 +9,23 @@ The toolchain revolves around **TLC**, the model checker. TLC exhaustively explo
 state your system can reach and checks that your invariants hold in all of them. When it finds a
 violation it prints an exact step-by-step error trace showing you how you got there.
 
-> **Prerequisite for all three sections:** Java 21+. See
-> [Installing Java](#0-prerequisite-java-21-via-sdkman) below before continuing.
+> **Prerequisite for all three options:** Java 21+. See
+> [Installing Java](#prerequisite-java-21-via-sdkman) below before continuing.
 
 ---
 
 ## Table of Contents
 
-1. [Prerequisite: Java 21 via SDKMAN](#0-prerequisite-java-21-via-sdkman)
-2. [The Toy Example: `Counter.tla`](#the-toy-example-countertla)
-3. [Part 1 — VSCode Extension (Recommended)](#part-1--vscode-extension-recommended)
-4. [Part 2 — TLA+ Toolbox (Legacy IDE)](#part-2--tla-toolbox-legacy-ide)
-5. [Part 3 — CLI (`tla2tools.jar`)](#part-3--cli-tla2toolsjar)
-6. [Further Resources](#further-resources)
+- [Prerequisite: Java 21 via SDKMAN](#prerequisite-java-21-via-sdkman)
+- [The Toy Example: `Counter.tla`](#the-toy-example-countertla)
+- [Option 1 — VSCode Extension (Recommended)](#option-1--vscode-extension-recommended)
+- [Option 2 — TLA+ Toolbox (Legacy IDE)](#option-2--tla-toolbox-legacy-ide)
+- [Option 3 — CLI (`tla2tools.jar`)](#option-3--cli-tla2toolsjar)
+- [Further Resources](#further-resources)
 
 ---
 
-## 0. Prerequisite: Java 21 via SDKMAN
+## Prerequisite: Java 21 via SDKMAN
 
 All TLA+ tooling runs on the JVM. The recommended way to install Java on macOS and Linux is
 [SDKMAN](https://sdkman.io), which lets you manage multiple Java versions without touching system
@@ -116,14 +116,14 @@ INVARIANT CounterInvariant
 
 ---
 
-## Part 1 — VSCode Extension (Recommended)
+## Option 1 — VSCode Extension (Recommended)
 
 The [official TLA+ Foundation VSCode extension](https://marketplace.visualstudio.com/items?itemName=tlaplus.vscode-ide)
 (`tlaplus.vscode-ide`) is the fastest path to a productive TLA+ environment. It wraps the same
 `tla2tools.jar` used by the Toolbox and CLI, but surfaces everything through VS Code's UI and
 Command Palette.
 
-### 1.1 Install the Extension
+### Install the Extension
 
 1. Open VS Code.
 2. Go to the **Extensions** panel (`Ctrl+Shift+X` / `Cmd+Shift+X`).
@@ -139,7 +139,7 @@ Alternatively, open Quick Open (`Ctrl+P`) and run:
 ext install tlaplus.vscode-ide
 ```
 
-### 1.2 Workflow: Translate, Configure, Check
+### Workflow: Translate, Configure, Check
 
 **Step 1 — Create your files.**
 
@@ -175,7 +175,7 @@ output panel to expand the full trace and step through each state.
 > To run against a different `.cfg` file, use **`TLA+: Check model with non-default config...`**
 > and select your file from the dialog.
 
-### 1.3 Key Commands Reference
+### Key Commands Reference
 
 | Command | What it does |
 |---|---|
@@ -193,7 +193,7 @@ output panel to expand the full trace and step through each state.
 > your existing setup. Open the Keyboard Shortcuts editor (`Ctrl+K Ctrl+S`), type `TLA+` to
 > filter all TLA+ commands, and bind whichever you use most often.
 
-### 1.4 Improving Your VSCode Experience
+### Improving Your VSCode Experience
 
 #### Parse on Save
 
@@ -300,21 +300,21 @@ for instructions on setting up a keyboard shortcut.
 
 ---
 
-## Part 2 — TLA+ Toolbox (Legacy IDE)
+## Option 2 — TLA+ Toolbox (Legacy IDE)
 
 The TLA+ Toolbox is the original dedicated IDE for TLA+, built on Eclipse. It is no longer
 actively developed, but remains fully functional and well-documented. If you prefer a
 self-contained GUI without VS Code, or need to follow older tutorials, the Toolbox works well.
 
-### 2.1 Install the Toolbox
+### Install the Toolbox
 
 Download the latest release for your platform from the
 [TLA+ GitHub releases page](https://github.com/tlaplus/tlaplus/releases/tag/v1.8.0). Java must
-be installed and on your `PATH` (see [Section 0](#0-prerequisite-java-21-via-sdkman)).
+be installed and on your `PATH` (see [Prerequisite: Java 21 via SDKMAN](#prerequisite-java-21-via-sdkman)).
 
 Unzip the archive and run the `toolbox` binary (macOS/Linux) or `toolbox.exe` (Windows).
 
-### 2.2 Configure External Tool Paths
+### Configure External Tool Paths
 
 Before using dot or PDF export, tell the Toolbox where to find those tools. Go to
 **File → Preferences → TLA+ Preferences** and set:
@@ -325,7 +325,7 @@ Before using dot or PDF export, tell the Toolbox where to find those tools. Go t
   `/Library/TeX/texbin/pdflatex`). Install a LaTeX distribution with `brew install --cask mactex`
   (macOS) or `sudo apt install texlive-full` (Linux).
 
-### 2.3 Create a Specification
+### Create a Specification
 
 1. Go to **File → Open Spec → Add New Spec**.
 2. Browse to the directory where you saved `Counter.tla` and select it (or type a new path to
@@ -335,13 +335,13 @@ Before using dot or PDF export, tell the Toolbox where to find those tools. Go t
 
 The module name in the first line must match the filename exactly.
 
-### 2.4 Translate PlusCal
+### Translate PlusCal
 
 Go to **File → Translate PlusCal Algorithm**, or press `Ctrl+T` (Windows/Linux) / `Cmd+T`
 (macOS). The Toolbox runs the translator and injects the generated TLA+ between the
 `BEGIN TRANSLATION` / `END TRANSLATION` markers in your file.
 
-### 2.5 Create a Model and Set Invariants
+### Create a Model and Set Invariants
 
 1. Go to **TLC Model Checker → New Model** and give it a name (e.g. `Model_1`).
 2. In the model editor, confirm **"What is the behavior spec?"** is set to **Temporal Formula**
@@ -350,7 +350,7 @@ Go to **File → Translate PlusCal Algorithm**, or press `Ctrl+T` (Windows/Linux
 3. Scroll to the **Invariants** section and click **Add**. Type `CounterInvariant`.
 4. Press **F11** (or the green Run button) to start TLC.
 
-### 2.6 Read the Error Trace
+### Read the Error Trace
 
 When TLC finds the invariant violation, a red error panel appears on the right. This is the
 **error trace** — an ordered list of states, each showing the value of every variable at that
@@ -360,20 +360,20 @@ the violating one.
 Click any state row to expand it and inspect all variable values. The **Trace Explorer** panel
 lets you add derived expressions (e.g. `count + 1`) to the trace output for richer debugging.
 
-### 2.7 Generate a State-Space Graph
+### Generate a State-Space Graph
 
 1. Open the model editor and go to the **TLC Options** tab.
 2. Under **Features**, enable **"Visualize state graph after completion of model checking"**.
 3. Run the model. When TLC finishes, the Toolbox renders the state graph using the `dot` binary
-   configured in [Section 2.2](#22-configure-external-tool-paths).
+   configured in [Configure External Tool Paths](#configure-external-tool-paths).
 
-### 2.8 Export to PDF
+### Export to PDF
 
 With a spec open, go to **File → Produce PDF Version of Module**. This invokes Tla2Tex using
-the `pdflatex` path configured in [Section 2.2](#22-configure-external-tool-paths) and opens
+the `pdflatex` path configured in [Configure External Tool Paths](#configure-external-tool-paths) and opens
 the resulting PDF.
 
-### 2.9 The Scratch File Pattern
+### The Scratch File Pattern
 
 When exploring TLA+ operators it helps to have a throwaway spec for quick evaluation. Create
 `scratch.tla`:
@@ -393,12 +393,12 @@ the expression and re-run to explore any operator interactively.
 
 ---
 
-## Part 3 — CLI (`tla2tools.jar`)
+## Option 3 — CLI (`tla2tools.jar`)
 
 The CLI is ideal for scripting, CI pipelines, and automation. Everything the Toolbox and VSCode
 extension do under the hood ultimately calls `tla2tools.jar`.
 
-### 3.1 Get `tla2tools.jar`
+### Get `tla2tools.jar`
 
 Download the latest release from the
 [TLA+ GitHub releases page](https://github.com/tlaplus/tlaplus/releases). Look for
@@ -407,7 +407,7 @@ lives in its base installation directory.
 
 Place the jar somewhere convenient — either on your `PATH` or alongside your spec files.
 
-### 3.2 Translate PlusCal
+### Translate PlusCal
 
 ```bash
 java -cp tla2tools.jar pcal.trans Counter.tla
@@ -428,7 +428,7 @@ java -cp tla2tools.jar pcal.trans -nocfg Counter.tla
 There is no flag to suppress `Counter.old`. Add `find . -name "*.old" -delete` to your build
 script if those files are unwanted.
 
-### 3.3 Run TLC
+### Run TLC
 
 ```bash
 java -jar tla2tools.jar -config Counter.cfg -workers auto Counter.tla
@@ -441,7 +441,7 @@ java -jar tla2tools.jar -config Counter.cfg -workers auto Counter.tla
 
 You should see an invariant violation with a trace showing `count` incrementing past `5`.
 
-### 3.4 Generate a State-Space Graph (dot)
+### Generate a State-Space Graph (dot)
 
 ```bash
 java -jar tla2tools.jar \
@@ -461,7 +461,7 @@ dot -Tpng Counter.dot -o Counter.png
 > **Note:** TLC does not append a file extension automatically — always include `.dot` in the
 > filename you pass.
 
-### 3.5 Export to LaTeX / PDF
+### Export to LaTeX / PDF
 
 ```bash
 # Generate .tex and .dvi
@@ -472,10 +472,10 @@ java -cp tla2tools.jar tla2tex.TLA -shade -number Counter.tla
 ```
 
 `-shade` enables background shading on comments and the PlusCal block. `-number` adds line
-numbers. See [Section 2.2](#22-configure-external-tool-paths) for `pdflatex` install
+numbers. See [Configure External Tool Paths](#configure-external-tool-paths) for `pdflatex` install
 instructions.
 
-### 3.6 Key TLC Flags
+### Key TLC Flags
 
 | Flag | Description |
 |---|---|
