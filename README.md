@@ -17,7 +17,7 @@ To learn more about TLA+ and find resources/tutorials, please see the [Getting S
 
 Specify the values for any constants under `CONSTANT`
 
-Ex. Idempotency can have:
+Ex. Optimistic locking can have:
 ```
 UniqueRequests = 2
 TotalRequests = 3
