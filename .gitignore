@@ -1,8 +1,14 @@
-# Ignore toolbox files
-*.toolbox
+# Deny everything by default
+*
 
-# Ignore pdfs
-*.pdf
+# Allow git to traverse into subdirectories
+!*/
 
-# Ignore MAC files
-**/.DS_Store
+# Source files — the only things worth tracking
+!*.tla
+!*.cfg
+
+# Repo files
+!.gitignore
+!README.md
+!Makefile
