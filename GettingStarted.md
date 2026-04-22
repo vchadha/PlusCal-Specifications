@@ -134,7 +134,7 @@ Command Palette.
 > encounter in older tutorials. The Foundation extension (`tlaplus.vscode-ide`) is the actively
 > maintained successor — use that one.
 
-Alternatively, open Quick Open (`Ctrl+P`) and run:
+Alternatively, open Quick Open (`Ctrl+P` / `Cmd+P`) and run:
 ```
 ext install tlaplus.vscode-ide
 ```
@@ -156,8 +156,7 @@ TLA+: Parse module
 ```
 
 This does two things in one step: it runs the PlusCal translator (filling in the
-`BEGIN TRANSLATION` block) and then runs the SANY parser to check TLA+ syntax. Errors appear
-in VS Code's **Problems** panel. On success, the translated TLA+ is written directly into
+`BEGIN TRANSLATION` block) and then runs the SANY parser to check TLA+ syntax. On success, the translated TLA+ is written directly into
 `Counter.tla`.
 
 **Step 3 — Run the model checker.**
@@ -190,7 +189,7 @@ output panel to expand the full trace and step through each state.
 | `TLA+: Export module to PDF` | Generate a PDF document |
 
 > **Keyboard shortcuts:** The extension ships with no default bindings to avoid conflicts with
-> your existing setup. Open the Keyboard Shortcuts editor (`Ctrl+K Ctrl+S`), type `TLA+` to
+> your existing setup. Open the Keyboard Shortcuts editor (`Ctrl+K Ctrl+S` / `Cmd+K Cmd+S`), type `TLA+` to
 > filter all TLA+ commands, and bind whichever you use most often.
 
 ### Improving Your VSCode Experience
@@ -199,7 +198,7 @@ output panel to expand the full trace and step through each state.
 
 Triggering `TLA+: Parse module` manually on every edit gets tedious quickly. You can make it
 run automatically every time you save a `.tla` file. Open your `settings.json`
-(`Ctrl+Shift+P` → *Preferences: Open User Settings (JSON)*) and add:
+(`Ctrl+Shift+P` / `Cmd+Shift+P` → *Preferences: Open User Settings (JSON)*) and add:
 
 ```json
 "[tlaplus]": {
@@ -215,7 +214,7 @@ with errors surfacing in the Problems panel immediately.
 #### Evaluate Constant Expressions
 
 You can evaluate any TLA+ constant expression without running a full model check. Select the
-expression in the editor and run `TLA+: Evaluate constant expression` from the Command Palette.
+expression in the editor and run `TLA+: Evaluate expression` from the Command Palette.
 The result appears in the output panel.
 
 This is handy for testing individual operators as you write them — for example, selecting
@@ -225,7 +224,7 @@ This is handy for testing individual operators as you write them — for example
 
 TLC can export its explored state space as a Graphviz `.dot` file, letting you visually inspect
 the states and transitions of small specs. Add the following to the **`TLC Model Checker: Options`**
-setting (VS Code Settings → Extensions → TLA+):
+setting (VS Code Settings → Extensions → TLA+ → Model Checker: Options):
 
 ```
 -dump dot,colorize,actionlabels ${specName}.dot
@@ -319,11 +318,11 @@ Unzip the archive and run the `toolbox` binary (macOS/Linux) or `toolbox.exe` (W
 Before using dot or PDF export, tell the Toolbox where to find those tools. Go to
 **File → Preferences → TLA+ Preferences** and set:
 
-- **Specify dot command** — the full path to your `dot` binary (e.g. `/usr/local/bin/dot`).
+- **Specify dot command** — the full path to your `dot` binary (e.g. `/usr/local/bin/dot`).   
   Install Graphviz with `brew install graphviz` (macOS) or `sudo apt install graphviz` (Linux).
 - **Specify pdflatex command** — the full path to your `pdflatex` binary (e.g.
-  `/Library/TeX/texbin/pdflatex`). Install a LaTeX distribution with `brew install --cask mactex`
-  (macOS) or `sudo apt install texlive-full` (Linux).
+  `/Library/TeX/texbin/pdflatex`).    
+  Install a LaTeX distribution with `brew install --cask mactex` (macOS) or `sudo apt install texlive-full` (Linux).
 
 ### Create a Specification
 
@@ -333,13 +332,15 @@ Before using dot or PDF export, tell the Toolbox where to find those tools. Go t
 3. The editor opens. Replace the blank skeleton with the contents of `Counter.tla` from the
    [toy example](#the-toy-example-countertla) above.
 
-The module name in the first line must match the filename exactly.
+The module name in the first line must match the filename exactly. You might see an error like `Unknown operator: 'count'.`, but that will go away as soon as we translate the PlusCal to TLA+ in the next step.
 
 ### Translate PlusCal
 
 Go to **File → Translate PlusCal Algorithm**, or press `Ctrl+T` (Windows/Linux) / `Cmd+T`
 (macOS). The Toolbox runs the translator and injects the generated TLA+ between the
 `BEGIN TRANSLATION` / `END TRANSLATION` markers in your file.
+
+If it asks you to add checksums to your file, you can click yes.
 
 ### Create a Model and Set Invariants
 
@@ -357,7 +358,7 @@ When TLC finds the invariant violation, a red error panel appears on the right. 
 step. You will see `count` increasing from `0` up through `6`, with the final state flagged as
 the violating one.
 
-Click any state row to expand it and inspect all variable values. The **Trace Explorer** panel
+Click any state row to expand it and inspect all variable values. The **Error-Trace Exploration** panel
 lets you add derived expressions (e.g. `count + 1`) to the trace output for richer debugging.
 
 ### Generate a State-Space Graph
@@ -369,7 +370,7 @@ lets you add derived expressions (e.g. `count + 1`) to the trace output for rich
 
 ### Export to PDF
 
-With a spec open, go to **File → Produce PDF Version of Module**. This invokes Tla2Tex using
+With a spec open, go to **File → Produce PDF Version**. This invokes Tla2Tex using
 the `pdflatex` path configured in [Configure External Tool Paths](#configure-external-tool-paths) and opens
 the resulting PDF.
 
