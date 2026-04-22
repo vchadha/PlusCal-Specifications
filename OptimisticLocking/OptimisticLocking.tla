@@ -1,21 +1,27 @@
---------------------- MODULE LIdempotencyConcurrencyBug ---------------------
+------------------------ MODULE OptimisticLocking ---------------------------
 (***************************************************************************)
-(* This module contains an algorithm that implements Idempotency that also *)
-(* implements a faulty optimisation.                                       *)
-(* Parallelising the get latest item call with the idempotency check       *)
-(* introduces a bug whereby we violate our property of idempotency.        *)
+(* This module contains an algorithm for a service that                    *)
+(* implements Optimistic locking.                                          *)
+(*                                                                         *)
+(* We define the following invariants:                                     *)
+(*                                                                         *)
+(*  1. New items are always written to the db with monotonically           *)
+(*      increasing indecies starting from 0.                               *)
+(*  2. If there are two concurrent requests, one will succeed and one      *)
+(*      will fail since they will both try to write to index N + 1         *)
+(*      and no overwrites are allowed.                                     *)
+(*                                                                         *)
+(* Optimistic locking defines the following invariant:                     *)
+(*                                                                         *)
+(*  1. If multiple requests are sent with the same unique id, one          *)
+(*      will be processed and the other will not.                          *)
 (***************************************************************************)
-
-\* Imports
 EXTENDS Integers, Sequences
 
-\* Constants
 CONSTANT UniqueRequests, TotalRequests
     ASSUME UniqueRequests \in Nat
     ASSUME UniqueRequests > 0
     ASSUME TotalRequests \in Nat
-
-\* MACROS
 
 \* Write to database
 \*  newItem = item to append to head of database
@@ -48,7 +54,7 @@ OptimisticLock(index, db) == { j \in 1..Len(db) : index = db[j][1] } = {}
 
 (****************************************************************************
 
---algorithm Idempotency
+--algorithm OptimisticLocking
 {
     \* db is a sequence of tuples: << index, unique id >>
     variables db = << >>, Requests = 1..TotalRequests;
@@ -66,26 +72,18 @@ OptimisticLock(index, db) == { j \in 1..Len(db) : index = db[j][1] } = {}
     {
 proc:   while ( ~doneProcessing )
         {   
-            either {
-                \* Get latest item in database
-getItem1:       latestItem := GetLatestItem(db);
+            \* Get latest item in database
+getItem:    latestItem := GetLatestItem(db);
                 
-                \* Check if request id has been seen before
-idempCheck1:    idempotentCheck := IdempotencyCheck(uniqueId, db);
-            }
-            or
-            {
-                \* Check if request id has been seen before
-idempCheck2:    idempotentCheck := IdempotencyCheck(uniqueId, db);
-
-                \* Get latest item in database
-getItem2:       latestItem := GetLatestItem(db);
-            };
+            \* Check if request id has been seen before
+idempCheck: idempotentCheck := IdempotencyCheck(uniqueId, db);
                 
 handle:     if ( ~idempotentCheck )
             {
                 \* Create new item
-                newItem := IF latestItem = << >> THEN << 0, uniqueId >> ELSE << latestItem[1] + 1, uniqueId >>;
+                newItem := IF latestItem = << >>
+                            THEN << 0, uniqueId >>
+                            ELSE << latestItem[1] + 1, uniqueId >>;
                     
                 \* Optimistic locking check - has anyone taken new index
 write:          if ( OptimisticLock(newItem[1], db) )
@@ -104,11 +102,11 @@ write:          if ( OptimisticLock(newItem[1], db) )
 
 ****************************************************************************)
 
-\* BEGIN TRANSLATION (chksum(pcal) = "621e51b8" /\ chksum(tla) = "9591cd3")
-VARIABLES db, Requests, pc, uniqueId, latestItem, idempotentCheck, newItem, 
+\* BEGIN TRANSLATION (chksum(pcal) = "623ec93f" /\ chksum(tla) = "bb81ebf3")
+VARIABLES pc, db, Requests, uniqueId, latestItem, idempotentCheck, newItem, 
           doneProcessing
 
-vars == << db, Requests, pc, uniqueId, latestItem, idempotentCheck, newItem, 
+vars == << pc, db, Requests, uniqueId, latestItem, idempotentCheck, newItem, 
            doneProcessing >>
 
 ProcSet == (Requests)
@@ -126,15 +124,28 @@ Init == (* Global variables *)
 
 proc(self) == /\ pc[self] = "proc"
               /\ IF ~doneProcessing[self]
-                    THEN /\ \/ /\ pc' = [pc EXCEPT ![self] = "getItem1"]
-                            \/ /\ pc' = [pc EXCEPT ![self] = "idempCheck2"]
+                    THEN /\ pc' = [pc EXCEPT ![self] = "getItem"]
                     ELSE /\ pc' = [pc EXCEPT ![self] = "Done"]
               /\ UNCHANGED << db, Requests, uniqueId, latestItem, 
                               idempotentCheck, newItem, doneProcessing >>
 
+getItem(self) == /\ pc[self] = "getItem"
+                 /\ latestItem' = [latestItem EXCEPT ![self] = GetLatestItem(db)]
+                 /\ pc' = [pc EXCEPT ![self] = "idempCheck"]
+                 /\ UNCHANGED << db, Requests, uniqueId, idempotentCheck, 
+                                 newItem, doneProcessing >>
+
+idempCheck(self) == /\ pc[self] = "idempCheck"
+                    /\ idempotentCheck' = [idempotentCheck EXCEPT ![self] = IdempotencyCheck(uniqueId[self], db)]
+                    /\ pc' = [pc EXCEPT ![self] = "handle"]
+                    /\ UNCHANGED << db, Requests, uniqueId, latestItem, 
+                                    newItem, doneProcessing >>
+
 handle(self) == /\ pc[self] = "handle"
                 /\ IF ~idempotentCheck[self]
-                      THEN /\ newItem' = [newItem EXCEPT ![self] = IF latestItem[self] = << >> THEN << 0, uniqueId[self] >> ELSE << latestItem[self][1] + 1, uniqueId[self] >>]
+                      THEN /\ newItem' = [newItem EXCEPT ![self] = IF latestItem[self] = << >>
+                                                                    THEN << 0, uniqueId[self] >>
+                                                                    ELSE << latestItem[self][1] + 1, uniqueId[self] >>]
                            /\ pc' = [pc EXCEPT ![self] = "write"]
                            /\ UNCHANGED doneProcessing
                       ELSE /\ doneProcessing' = [doneProcessing EXCEPT ![self] = TRUE]
@@ -153,33 +164,8 @@ write(self) == /\ pc[self] = "write"
                /\ UNCHANGED << Requests, uniqueId, latestItem, idempotentCheck, 
                                newItem >>
 
-getItem1(self) == /\ pc[self] = "getItem1"
-                  /\ latestItem' = [latestItem EXCEPT ![self] = GetLatestItem(db)]
-                  /\ pc' = [pc EXCEPT ![self] = "idempCheck1"]
-                  /\ UNCHANGED << db, Requests, uniqueId, idempotentCheck, 
-                                  newItem, doneProcessing >>
-
-idempCheck1(self) == /\ pc[self] = "idempCheck1"
-                     /\ idempotentCheck' = [idempotentCheck EXCEPT ![self] = IdempotencyCheck(uniqueId[self], db)]
-                     /\ pc' = [pc EXCEPT ![self] = "handle"]
-                     /\ UNCHANGED << db, Requests, uniqueId, latestItem, 
-                                     newItem, doneProcessing >>
-
-idempCheck2(self) == /\ pc[self] = "idempCheck2"
-                     /\ idempotentCheck' = [idempotentCheck EXCEPT ![self] = IdempotencyCheck(uniqueId[self], db)]
-                     /\ pc' = [pc EXCEPT ![self] = "getItem2"]
-                     /\ UNCHANGED << db, Requests, uniqueId, latestItem, 
-                                     newItem, doneProcessing >>
-
-getItem2(self) == /\ pc[self] = "getItem2"
-                  /\ latestItem' = [latestItem EXCEPT ![self] = GetLatestItem(db)]
-                  /\ pc' = [pc EXCEPT ![self] = "handle"]
-                  /\ UNCHANGED << db, Requests, uniqueId, idempotentCheck, 
-                                  newItem, doneProcessing >>
-
-request(self) == proc(self) \/ handle(self) \/ write(self)
-                    \/ getItem1(self) \/ idempCheck1(self)
-                    \/ idempCheck2(self) \/ getItem2(self)
+request(self) == proc(self) \/ getItem(self) \/ idempCheck(self)
+                    \/ handle(self) \/ write(self)
 
 (* Allow infinite stuttering to prevent deadlock on termination. *)
 Terminating == /\ \A self \in ProcSet: pc[self] = "Done"
@@ -202,7 +188,6 @@ IndexOrder == (Len(db) > 1) => \A i \in 1..Len(db): (i + 1 <= Len(db)) => db[i][
 IdUniqueness == (Len(db) > 1) => ( \A i, j \in 1..Len(db): (i /= j) => db[i][2] /= db[j][2] )
 
 FinalDBSize == (\A self \in ProcSet: pc[self] = "Done") => Len(db) = UniqueRequests
+
 =============================================================================
-\* Modification History
-\* Last modified Sat Apr 19 08:00:48 CDT 2025 by vchadha
-\* Created Fri Mar 28 10:58:53 CDT 2025 by vchadha
+\* Created Mon Mar 24 13:40:16 CDT 2025 by vchadha
