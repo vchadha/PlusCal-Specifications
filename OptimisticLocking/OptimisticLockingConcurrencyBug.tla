@@ -46,9 +46,7 @@ IdempotencyCheck(uniqueId, db) ==
 \*  Output: True if no item has given index in the database
 OptimisticLock(index, db) == { j \in 1..Len(db) : index = db[j][1] } = {}
 
-(****************************************************************************
-
---algorithm OptimisticLockingConcurrencyBug
+(*--algorithm OptimisticLockingConcurrencyBug
 {
     \* db is a sequence of tuples: << index, unique id >>
     variables db = << >>, Requests = 1..TotalRequests;
@@ -100,9 +98,7 @@ write:          if ( OptimisticLock(newItem[1], db) )
             }
         }
     }
-}
-
-****************************************************************************)
+}*)
 
 \* BEGIN TRANSLATION (chksum(pcal) = "5577c206" /\ chksum(tla) = "bbdf6cd1")
 VARIABLES pc, db, Requests, uniqueId, latestItem, idempotentCheck, newItem, 
