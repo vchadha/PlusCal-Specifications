@@ -49,7 +49,7 @@ StreamRec(tp, k, src) == [type |-> tp, key |-> k, source |-> src]
 
 -----------------------------------------------------------------------------
 
-(*--algorithm DynamoDBGlobalTable {
+(*--algorithm GlobalTableLWW {
 
     \* db[r][k]         — the current item at key k in region r, or NoItem.
     \* repl_queue[r]    — set of pending replication events for region r.
